@@ -21,3 +21,15 @@ spring:
     baseline-on-migrate: true
     baseline-version: 0
     locations: classpath:db/migration
+
+  main:
+    allow-circular-references: true
+
+jwt:
+  secret: "KKSPAblcAbUYVlPsOlT8n0c32N/ZHJP5xFLQGJRaK/k="
+  expiration: 1800000 # 30 phút
+
+logging:
+  level:
+    org.springframework.security: DEBUG
+    org.springframework.security.web.access: TRACE

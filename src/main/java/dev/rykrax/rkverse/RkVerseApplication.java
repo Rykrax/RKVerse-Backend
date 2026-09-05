@@ -1,6 +1,5 @@
 package dev.rykrax.rkverse;
 
-import dev.rykrax.rkverse.feature.user.UserRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;

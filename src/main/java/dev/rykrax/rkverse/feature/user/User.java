@@ -1,6 +1,8 @@
 package dev.rykrax.rkverse.feature.user;
 
+import dev.rykrax.rkverse.enums.UserStatus;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -26,8 +28,18 @@ public class User {
     @Column(name = "email", unique = true, length = 100)
     private String email;
 
+    @Column(name = "role", length = 255)
+    private String role;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus status = UserStatus.ACTIVE;
+
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt;
