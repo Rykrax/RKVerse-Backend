@@ -3,7 +3,7 @@ package dev.rykrax.rkverse.security;
 import dev.rykrax.rkverse.exception.CustomAuthenticationEntryPoint;
 import dev.rykrax.rkverse.exception.CustomAuthorizationEntryPoint;
 import dev.rykrax.rkverse.security.jwt.JwtAuthenticationFilter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,19 +23,16 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Autowired
-    private CustomUserDetailService customUserDetailService;
+    private final CustomUserDetailService customUserDetailService;
 
-    @Autowired
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Autowired
-    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+    private final CustomAuthenticationEntryPoint authenticationEntryPoint;
 
-    @Autowired
-    private CustomAuthorizationEntryPoint authorizationEntryPoint;
+    private final CustomAuthorizationEntryPoint authorizationEntryPoint;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -70,7 +67,7 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(authenticationEntryPoint)
-                        .authenticationEntryPoint(authorizationEntryPoint))
+                        .accessDeniedHandler(authorizationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
