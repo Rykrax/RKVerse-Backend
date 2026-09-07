@@ -2,7 +2,9 @@ package dev.rykrax.rkverse.feature.auth;
 
 import dev.rykrax.rkverse.common.ApiResponse;
 import dev.rykrax.rkverse.feature.auth.dto.request.LoginRequest;
+import dev.rykrax.rkverse.feature.auth.dto.response.LoginResponse;
 import dev.rykrax.rkverse.security.jwt.JwtService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,7 +21,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class AuthController {
     private final JwtService jwtService;
-    private final AuthenticationManager authenticationManager;
+    private final AuthService authService;
     private final UserDetailsService userDetailsService;
 
     @GetMapping("/token")
@@ -29,17 +31,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ApiResponse<Map<String,String>> login(@RequestBody LoginRequest loginRequest) {
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.username(),
-                        loginRequest.password()
-                )
-        );
-
-        System.out.println("authentication: " + authentication);
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String accessToken = jwtService.generateToken(userDetails);
-        return ApiResponse.success(Map.of("AccessToken", accessToken));
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest) {
+        LoginResponse response = authService.login(loginRequest);
+        return ApiResponse.success(response);
     }
 }

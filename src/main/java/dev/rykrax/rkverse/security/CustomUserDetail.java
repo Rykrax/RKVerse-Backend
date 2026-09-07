@@ -9,9 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Getter
 @AllArgsConstructor
@@ -19,12 +17,38 @@ public class CustomUserDetail implements UserDetails {
 
     private final User user;
 
+//    @Override
+//    public Collection<? extends GrantedAuthority> getAuthorities() {
+//        if (user.getRoles() == null || user.getRoles().trim().isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+//    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        if (user.getRole() == null || user.getRole().trim().isEmpty()) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
             return Collections.emptyList();
         }
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole()));
+
+        Set<GrantedAuthority> authorities = new HashSet<>();
+
+        user.getRoles().forEach(role -> {
+            if (role.getName() != null && !role.getName().isBlank()) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+            }
+
+            // thêm permissions thuộc Role 
+            if (role.getPermissions() != null) {
+                role.getPermissions().forEach(permission -> {
+                    if (permission.getCode() != null && !permission.getCode().isBlank()) {
+                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
+                    }
+                });
+            }
+        });
+
+        return authorities;
     }
 
     @Override
@@ -55,7 +79,7 @@ public class CustomUserDetail implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return !Boolean.TRUE.equals(user.getIsDeleted()) && user.getStatus() == UserStatus.ACTIVE;
+        return user.getDeletedAt() == null && user.getStatus() == UserStatus.ACTIVE;
     }
 
 }
