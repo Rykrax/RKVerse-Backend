@@ -38,7 +38,7 @@ public class CustomUserDetail implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
             }
 
-            // thêm permissions thuộc Role 
+            // thêm permissions thuộc Role
             if (role.getPermissions() != null) {
                 role.getPermissions().forEach(permission -> {
                     if (permission.getCode() != null && !permission.getCode().isBlank()) {
@@ -82,4 +82,7 @@ public class CustomUserDetail implements UserDetails {
         return user.getDeletedAt() == null && user.getStatus() == UserStatus.ACTIVE;
     }
 
+    public Long getId() {
+        return user.getId();
+    }
 }

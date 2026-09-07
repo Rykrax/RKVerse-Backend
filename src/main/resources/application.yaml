@@ -27,7 +27,8 @@ spring:
 
 jwt:
   secret: "KKSPAblcAbUYVlPsOlT8n0c32N/ZHJP5xFLQGJRaK/k="
-  expiration: 1800000 # 30 phút
+  expiration: 900000 # 15 phút
+  refresh-token: 604800000 # 7 ngày
 
 logging:
   level:
