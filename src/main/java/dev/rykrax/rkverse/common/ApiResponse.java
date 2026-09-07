@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL) // don't response field if null
 public record ApiResponse<T> (
-    int statusCode,
+    int status,
     String message,
     T data
 ) {

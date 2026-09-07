@@ -1,5 +1,7 @@
 package dev.rykrax.rkverse.security;
 
+import dev.rykrax.rkverse.exception.CustomAuthenticationEntryPoint;
+import dev.rykrax.rkverse.exception.CustomAuthorizationEntryPoint;
 import dev.rykrax.rkverse.security.jwt.JwtAuthenticationFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -8,7 +10,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -30,6 +31,12 @@ public class SecurityConfig {
     @Autowired
     private JwtAuthenticationFilter jwtAuthenticationFilter;
 
+    @Autowired
+    private CustomAuthenticationEntryPoint authenticationEntryPoint;
+
+    @Autowired
+    private CustomAuthorizationEntryPoint authorizationEntryPoint;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -42,13 +49,6 @@ public class SecurityConfig {
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
-
-//    @Bean
-//    public AuthenticationManager authenticationManager(HttpSecurity httpSecurity) {
-//        return httpSecurity.getSharedObject(AuthenticationManagerBuilder.class)
-//                .authenticationProvider(authenticationProvider())
-//                .build();
-//    }
 
     @Bean
     public AuthenticationManager authenticationManager(DaoAuthenticationProvider authenticationProvider) {
@@ -68,6 +68,9 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .authenticationEntryPoint(authorizationEntryPoint))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return httpSecurity.build();
     }
