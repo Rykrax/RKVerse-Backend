@@ -3,18 +3,16 @@ package dev.rykrax.rkverse.feature.user;
 import dev.rykrax.rkverse.enums.UserStatus;
 import dev.rykrax.rkverse.feature.role.Role;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
 public class User {
@@ -51,4 +49,20 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    public static User createRegisteredUser(String username, String encodedPassword, Role defaultRole) {
+        Objects.requireNonNull(username, "Username không được để null");
+        Objects.requireNonNull(encodedPassword, "Mật khẩu mã hóa không được để null");
+        Objects.requireNonNull(defaultRole, "Role mặc định không được để null");
+
+        User user = new User();
+        user.username = username;
+        user.password = encodedPassword;
+        user.status = UserStatus.ACTIVE;
+
+        user.roles = new HashSet<>();
+        user.roles.add(defaultRole);
+
+        return user;
+    }
 }

@@ -2,8 +2,10 @@ package dev.rykrax.rkverse.feature.auth;
 
 import dev.rykrax.rkverse.common.ApiResponse;
 import dev.rykrax.rkverse.feature.auth.dto.request.LoginRequest;
+import dev.rykrax.rkverse.feature.auth.dto.request.RegisterRequest;
 import dev.rykrax.rkverse.feature.auth.dto.response.LoginResponse;
 import dev.rykrax.rkverse.feature.auth.dto.response.RefreshTokenResponse;
+import dev.rykrax.rkverse.feature.auth.dto.response.RegisterResponse;
 import dev.rykrax.rkverse.security.jwt.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -60,5 +62,11 @@ public class AuthController {
 
         RefreshTokenResponse tokenResponse = authService.refreshToken(refreshToken);
         return ApiResponse.success(tokenResponse);
+    }
+
+    @PostMapping("/register")
+    public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        RegisterResponse registerResponse = authService.register(registerRequest);
+        return ApiResponse.success(registerResponse);
     }
 }

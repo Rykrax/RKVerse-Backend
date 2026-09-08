@@ -4,9 +4,10 @@ import dev.rykrax.rkverse.feature.auth.dto.request.LoginRequest;
 import dev.rykrax.rkverse.feature.auth.dto.request.RegisterRequest;
 import dev.rykrax.rkverse.feature.auth.dto.response.LoginResponse;
 import dev.rykrax.rkverse.feature.auth.dto.response.RefreshTokenResponse;
+import dev.rykrax.rkverse.feature.auth.dto.response.RegisterResponse;
 
 public interface IAuthService {
     LoginResponse login(LoginRequest request);
     RefreshTokenResponse refreshToken(String refreshToken);
-    void register(RegisterRequest request);
+    RegisterResponse register(RegisterRequest request);
 }

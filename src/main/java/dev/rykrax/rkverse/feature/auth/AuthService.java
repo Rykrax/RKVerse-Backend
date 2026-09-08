@@ -1,16 +1,22 @@
 package dev.rykrax.rkverse.feature.auth;
 
+import dev.rykrax.rkverse.enums.UserStatus;
 import dev.rykrax.rkverse.feature.auth.dto.request.LoginRequest;
 import dev.rykrax.rkverse.feature.auth.dto.request.RegisterRequest;
 import dev.rykrax.rkverse.feature.auth.dto.response.LoginResponse;
 import dev.rykrax.rkverse.feature.auth.dto.response.RefreshTokenResponse;
+import dev.rykrax.rkverse.feature.auth.dto.response.RegisterResponse;
+import dev.rykrax.rkverse.feature.role.Role;
+import dev.rykrax.rkverse.feature.role.RoleRepository;
 import dev.rykrax.rkverse.feature.user.User;
+import dev.rykrax.rkverse.feature.user.UserRepository;
 import dev.rykrax.rkverse.security.CustomUserDetail;
 import dev.rykrax.rkverse.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -19,7 +25,9 @@ public class AuthService implements IAuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
-
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
@@ -60,7 +68,25 @@ public class AuthService implements IAuthService {
 
 
     @Override
-    public void register(RegisterRequest request) {
+    public RegisterResponse register(RegisterRequest request) {
+        System.out.println(request);
+        if (userRepository.existsByUsername(request.username())) {
+            throw new RuntimeException("Username đã tồn tại");
+        }
 
+        String passwordHash = passwordEncoder.encode(request.password());
+
+        Role defaultRole = roleRepository.findByName("USER").orElseThrow(() ->
+                new RuntimeException("Role không tồn tại")
+        );
+
+        User newUser = User.createRegisteredUser(
+                request.username(),
+                passwordHash,
+                defaultRole
+        );
+
+        User user = userRepository.save(newUser);
+        return new RegisterResponse(user.getUsername());
     }
 }
