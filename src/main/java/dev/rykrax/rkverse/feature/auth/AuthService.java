@@ -1,6 +1,7 @@
 package dev.rykrax.rkverse.feature.auth;
 
-import dev.rykrax.rkverse.enums.UserStatus;
+import dev.rykrax.rkverse.enums.ErrorCode;
+import dev.rykrax.rkverse.exception.AppException;
 import dev.rykrax.rkverse.feature.auth.dto.request.LoginRequest;
 import dev.rykrax.rkverse.feature.auth.dto.request.RegisterRequest;
 import dev.rykrax.rkverse.feature.auth.dto.response.LoginResponse;
@@ -71,7 +72,7 @@ public class AuthService implements IAuthService {
     public RegisterResponse register(RegisterRequest request) {
         System.out.println(request);
         if (userRepository.existsByUsername(request.username())) {
-            throw new RuntimeException("Username đã tồn tại");
+            throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
 
         String passwordHash = passwordEncoder.encode(request.password());

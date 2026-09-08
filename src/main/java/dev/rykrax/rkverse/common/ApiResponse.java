@@ -19,4 +19,11 @@ public record ApiResponse<T> (
     public static <T> ApiResponse<T> error(int statusCode, String message) {
         return new ApiResponse<>(statusCode, message, null);
     }
+
+    public static <T> ApiResponse<T> error(int statusCode, T error) {
+        return new ApiResponse<>(statusCode, null, error);
+    }
+    public static <T> ApiResponse<T> error(int statusCode, String message, T error) {
+        return new ApiResponse<>(statusCode, message, error);
+    }
 }
