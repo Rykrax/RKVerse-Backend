@@ -12,8 +12,11 @@ public record ApiResponse<T> (
         return new ApiResponse<>(200, "Success", result);
     }
 
-    public static <T> ApiResponse<T> success(String message, T result) {
-        return new ApiResponse<>(200, message, result);
+    public static <T> ApiResponse<T> success(int status, String message) {
+        return new ApiResponse<>(status, message, null);
+    }
+    public static <T> ApiResponse<T> success(int status, String message, T result) {
+        return new ApiResponse<>(status, message, result);
     }
 
     public static <T> ApiResponse<T> error(int statusCode, String message) {

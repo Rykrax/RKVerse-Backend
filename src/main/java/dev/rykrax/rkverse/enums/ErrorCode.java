@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum ErrorCode {
     USER_ALREADY_EXISTS(HttpStatus.CONFLICT, "Username đã tồn tại"),
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "User không tồn tại"),
     ROLE_NOT_FOUND(HttpStatus.NOT_FOUND, "Role không tồn tại"),
     REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "Refresh token không được để trống"),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh token không tồn tại"),

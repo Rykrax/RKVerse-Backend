@@ -12,6 +12,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -68,5 +69,11 @@ public class AuthController {
     public ApiResponse<RegisterResponse> register(@Valid @RequestBody RegisterRequest registerRequest) {
         RegisterResponse registerResponse = authService.register(registerRequest);
         return ApiResponse.success(registerResponse);
+    }
+
+    @PostMapping("/logout")
+    public ApiResponse<Void> logout(@RequestHeader("Authorization") String authorization) {
+        authService.logout(authorization);
+        return ApiResponse.success(HttpStatus.OK.value(), "Đăng xuất thành công");
     }
 }

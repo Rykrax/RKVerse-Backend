@@ -19,6 +19,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @Service
 @RequiredArgsConstructor
@@ -89,5 +90,14 @@ public class AuthService implements IAuthService {
 
         User user = userRepository.save(newUser);
         return new RegisterResponse(user.getUsername());
+    }
+
+    @Override
+    public void logout(String authorization) {
+        String token = authorization.substring(7);
+        String username = jwtService.extractUsername(token);
+        User user = userRepository.findByUsername(username).orElseThrow(() ->
+                new AppException(ErrorCode.USER_NOT_FOUND));
+        refreshTokenService.revokeAllUserTokens(user.getId());
     }
 }

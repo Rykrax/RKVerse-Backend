@@ -26,9 +26,9 @@ spring:
     allow-circular-references: true
 
 jwt:
-  secret: "KKSPAblcAbUYVlPsOlT8n0c32N/ZHJP5xFLQGJRaK/k="
-  expiration: 900000 # 15 phút
-  refresh-token: 604800000 # 7 ngày
+  secret: ${JWT_SECRET_KEY}
+  expiration: ${ACCESS_TOKEN_EXP}
+  refresh-token: ${REFRESH_TOKEN_EXP}
 
 logging:
   level:
