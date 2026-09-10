@@ -1,11 +1,15 @@
 package dev.rykrax.rkverse.feature.user;
 
 import dev.rykrax.rkverse.common.ApiResponse;
+import dev.rykrax.rkverse.common.PageResponse;
 import dev.rykrax.rkverse.feature.user.dto.request.ChangePasswordRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import dev.rykrax.rkverse.security.CustomUserDetail;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -20,9 +24,10 @@ public class UserController {
 
     @GetMapping()
     @PreAuthorize("hasAuthority('user.select')")
-    public ApiResponse<List<UserResponse>> getUsers() {
-        List<UserResponse> users = userService.getUsers();
-        return new ApiResponse<>(200, "Danh sách users", users);
+    public ApiResponse<PageResponse<UserResponse>> getUsers(
+            @PageableDefault(page = 1, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        PageResponse<UserResponse> response = userService.getUsers(pageable);
+        return new ApiResponse<>(200, "Danh sách users", response);
     }
 
     @GetMapping("/{id}")

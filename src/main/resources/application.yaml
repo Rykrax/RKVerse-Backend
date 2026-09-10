@@ -25,6 +25,13 @@ spring:
   main:
     allow-circular-references: true
 
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true # Cho phép page bắt đầu từ 1
+        default-page-size: 10
+        max-page-size: 100
+
 jwt:
   secret: ${JWT_SECRET_KEY}
   expiration: ${ACCESS_TOKEN_EXP}

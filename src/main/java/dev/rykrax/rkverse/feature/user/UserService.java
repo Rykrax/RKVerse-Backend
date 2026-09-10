@@ -1,5 +1,6 @@
 package dev.rykrax.rkverse.feature.user;
 
+import dev.rykrax.rkverse.common.PageResponse;
 import dev.rykrax.rkverse.enums.ErrorCode;
 import dev.rykrax.rkverse.enums.UserStatus;
 import dev.rykrax.rkverse.exception.AppException;
@@ -8,6 +9,8 @@ import dev.rykrax.rkverse.feature.user.dto.request.ChangePasswordRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import dev.rykrax.rkverse.security.CustomUserDetail;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,9 +27,12 @@ public class UserService implements IUserService {
     private final RefreshTokenService refreshTokenService;
 
     @Override
-    public List<UserResponse> getUsers() {
-        List<User> users = userRepository.findAll();
-        return users.stream().map(userMapper::toResponse).toList();
+    public PageResponse<UserResponse> getUsers(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
+
+        Page<UserResponse> responsePage = userPage.map(userMapper::toResponse);
+
+        return PageResponse.from(responsePage);
     }
 
     @Override

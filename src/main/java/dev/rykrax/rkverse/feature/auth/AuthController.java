@@ -22,17 +22,9 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
-    private final JwtService jwtService;
     private final AuthService authService;
-    private final UserDetailsService userDetailsService;
     @Value("${jwt.refresh-token.expiration-seconds:604800000}")
     private long refreshTokenExpirationSeconds;
-
-    @GetMapping("/token")
-    public String getToken() {
-        UserDetails user = userDetailsService.loadUserByUsername("admin");
-        return jwtService.generateToken(user);
-    }
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest
