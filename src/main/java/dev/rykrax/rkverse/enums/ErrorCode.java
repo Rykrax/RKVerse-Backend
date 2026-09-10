@@ -13,7 +13,10 @@ public enum ErrorCode {
     REFRESH_TOKEN_REQUIRED(HttpStatus.BAD_REQUEST, "Refresh token không được để trống"),
     REFRESH_TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "Refresh token không tồn tại"),
     REFRESH_TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "Refresh token đã bị thu hồi"),
-    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token đã hết hạn");
+    REFRESH_TOKEN_EXPIRED(HttpStatus.UNAUTHORIZED, "Refresh token đã hết hạn"),
+    ACCOUNT_NOT_ACTIVE(HttpStatus.UNAUTHORIZED, "Tài khoản chưa được kích hoạt hoặc đã bị khóa"),
+    CURRENT_PASSWORD_INCORRECT(HttpStatus.BAD_REQUEST, "Mật khẩu hiện tại không chính xác"),
+    NEW_PASSWORD_MUST_BE_DIFFERENT(HttpStatus.CONFLICT, "Mật khẩu mới không được trùng với mật khẩu hiện tại");
 
     private final HttpStatus httpStatus;
     private final String message;
