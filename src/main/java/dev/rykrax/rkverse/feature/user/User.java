@@ -1,15 +1,18 @@
 package dev.rykrax.rkverse.feature.user;
 
+import dev.rykrax.rkverse.enums.UserStatus;
+import dev.rykrax.rkverse.feature.role.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Setter
 public class User {
@@ -26,12 +29,40 @@ public class User {
     @Column(name = "email", unique = true, length = 100)
     private String email;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private UserStatus status = UserStatus.ACTIVE;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     @Column(name = "created_at", updatable = false, insertable = false)
     private LocalDateTime createdAt;
 
     @Column(name = "updated_at", insertable = false)
     private LocalDateTime updatedAt;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    @JoinTable(
+            name = "user_roles",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set<Role> roles = new HashSet<>();
+
+    public static User createRegisteredUser(String username, String encodedPassword, Role defaultRole) {
+        Objects.requireNonNull(username, "Username không được để null");
+        Objects.requireNonNull(encodedPassword, "Mật khẩu mã hóa không được để null");
+        Objects.requireNonNull(defaultRole, "Role mặc định không được để null");
+
+        User user = new User();
+        user.username = username;
+        user.password = encodedPassword;
+        user.status = UserStatus.ACTIVE;
+
+        user.roles = new HashSet<>();
+        user.roles.add(defaultRole);
+
+        return user;
+    }
 }
