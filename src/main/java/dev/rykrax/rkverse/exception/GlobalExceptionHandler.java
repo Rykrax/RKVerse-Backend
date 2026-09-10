@@ -4,6 +4,7 @@ import dev.rykrax.rkverse.common.ApiResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,5 +47,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getErrorCode().getHttpStatus())
                 .body(response);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Map<String, String>>> handleBadCredentials(BadCredentialsException ex) {
+        log.warn("Xác thực thất bại: {}", ex.getMessage());
+
+        ApiResponse<Map<String, String>> response = ApiResponse.error(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Tên đăng nhập hoặc mật khẩu không chính xác",
+                null
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 }
