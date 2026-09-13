@@ -19,6 +19,12 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
@@ -53,6 +59,30 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        // 1. Chỉ định chính xác domain của Vite (Không dùng "*" khi allowCredentials = true)
+        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+
+        // 2. Các HTTP Methods cho phép
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+
+        // 3. Cho phép toàn bộ header gửi lên (Authorization, Content-Type, ...)
+        configuration.setAllowedHeaders(List.of("*"));
+
+        // 4. Bắt buộc để gửi và nhận HttpOnly Cookie (refreshToken)
+        configuration.setAllowCredentials(true);
+
+        // 5. Cache kết quả preflight (OPTIONS) trong 1 giờ
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) {
         httpSecurity
                 .csrf(AbstractHttpConfigurer::disable)
@@ -60,6 +90,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()
+                        .requestMatchers("/home").permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)

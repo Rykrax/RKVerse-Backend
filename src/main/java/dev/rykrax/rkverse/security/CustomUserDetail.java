@@ -39,13 +39,13 @@ public class CustomUserDetail implements UserDetails {
             }
 
             // thêm permissions thuộc Role
-            if (role.getPermissions() != null) {
-                role.getPermissions().forEach(permission -> {
-                    if (permission.getCode() != null && !permission.getCode().isBlank()) {
-                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
-                    }
-                });
-            }
+//            if (role.getPermissions() != null) {
+//                role.getPermissions().forEach(permission -> {
+//                    if (permission.getCode() != null && !permission.getCode().isBlank()) {
+//                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
+//                    }
+//                });
+//            }
         });
 
         return authorities;

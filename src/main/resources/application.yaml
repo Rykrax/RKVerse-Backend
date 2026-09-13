@@ -41,3 +41,11 @@ logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.security.web.access: TRACE
+
+cloudflare:
+  r2:
+    endpoint: ${ENDPOINT_R2}
+    access-key: ${ACCESS_KEY}
+    secret-key: ${SECRET_KEY}
+    bucket-name: ${BUCKET_NAME}
+    public-domain: ${R2_CUSTOM_DOMAIN}
