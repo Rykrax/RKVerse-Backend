@@ -28,9 +28,22 @@ spring:
   data:
     web:
       pageable:
-        one-indexed-parameters: true # Cho phép page bắt đầu từ 1
+        one-indexed-parameters: true
         default-page-size: 10
         max-page-size: 100
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 20MB          # dung lượng tối đa cho 1 file lẻ
+      max-request-size: 300MB      # tổng dung lượng tối đa cho cả request
+      file-size-threshold: 2MB
+
+server:
+  tomcat:
+    max-swallow-size: -1           # không giới hạn swallow size
+    max-http-form-post-size: 300MB # giới hạn kích thước form POST
+    max-part-count: 300
 
 jwt:
   secret: ${JWT_SECRET_KEY}
@@ -41,6 +54,7 @@ logging:
   level:
     org.springframework.security: DEBUG
     org.springframework.security.web.access: TRACE
+    org.hibernate.orm.jdbc.bind: trace
 
 cloudflare:
   r2:

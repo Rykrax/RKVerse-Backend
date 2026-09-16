@@ -1,6 +1,7 @@
 package dev.rykrax.rkverse.feature.comic;
 
 import dev.rykrax.rkverse.feature.comic.dto.request.CreateComicRequest;
+import dev.rykrax.rkverse.feature.comic.dto.response.ComicDetailResponse;
 import dev.rykrax.rkverse.feature.comic.dto.response.ComicResponse;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -13,4 +14,5 @@ public interface ComicMapper {
     Comic toEntity(CreateComicRequest request);
 
     ComicResponse toResponse(Comic comic);
+    ComicDetailResponse toDetailResponse(Comic comic);
 }

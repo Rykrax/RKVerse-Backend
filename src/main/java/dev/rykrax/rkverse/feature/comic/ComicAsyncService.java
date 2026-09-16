@@ -16,7 +16,7 @@ public class ComicAsyncService {
     private final ComicRepository comicRepository;
     private final IR2StorageService r2StorageService;
 
-    @Async // có thể chỉ định thread pool sẵn
+    @Async
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void uploadCoverAsync(Long comicId, byte[] fileBytes, String contentType) {
         log.info("Bắt đầu xử lý upload ngầm cover cho Comic ID: {}", comicId);

@@ -3,6 +3,7 @@ package dev.rykrax.rkverse.feature.comic;
 import dev.rykrax.rkverse.common.ApiResponse;
 import dev.rykrax.rkverse.common.PageResponse;
 import dev.rykrax.rkverse.feature.comic.dto.request.CreateComicRequest;
+import dev.rykrax.rkverse.feature.comic.dto.response.ComicDetailResponse;
 import dev.rykrax.rkverse.feature.comic.dto.response.ComicResponse;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import jakarta.validation.Valid;
@@ -26,10 +27,11 @@ public class ComicController {
         return new ApiResponse<>(200, "Danh sách truyện", response);
     }
 
-//    @GetMapping("/{id}")
-//    public ApiResponse<ComicResponse> getComic(@PathVariable Long id) {
-//        ComicResponse
-//    }
+    @GetMapping("/{id}")
+    public ApiResponse<ComicDetailResponse> getComic(@PathVariable Long id) {
+        ComicDetailResponse response = comicService.getComic(id);
+        return new ApiResponse<>(200, "Thông tin truyện", response);
+    }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<ComicResponse> create(@Valid @ModelAttribute CreateComicRequest request) {

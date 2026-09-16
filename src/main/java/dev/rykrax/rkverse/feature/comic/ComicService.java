@@ -1,10 +1,10 @@
 package dev.rykrax.rkverse.feature.comic;
 
-import dev.rykrax.rkverse.common.ApiResponse;
 import dev.rykrax.rkverse.common.PageResponse;
 import dev.rykrax.rkverse.enums.ErrorCode;
 import dev.rykrax.rkverse.exception.AppException;
 import dev.rykrax.rkverse.feature.comic.dto.request.CreateComicRequest;
+import dev.rykrax.rkverse.feature.comic.dto.response.ComicDetailResponse;
 import dev.rykrax.rkverse.feature.comic.dto.response.ComicResponse;
 import dev.rykrax.rkverse.utils.SlugUtils;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +35,10 @@ public class ComicService implements IComicService {
     }
 
     @Override
-    public ApiResponse<ComicResponse> getComic(Long id) {
-        return null;
+    public ComicDetailResponse getComic(Long id) {
+        Comic comic = comicRepository.findById(id).orElseThrow(() ->
+                new AppException(ErrorCode.COMIC_NOT_FOUND));
+        return comicMapper.toDetailResponse(comic);
     }
 
     @Override

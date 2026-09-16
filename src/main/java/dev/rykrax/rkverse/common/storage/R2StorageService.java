@@ -10,6 +10,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Exception;
 
+import java.io.File;
 import java.io.IOException;
 
 @Service
@@ -24,6 +25,30 @@ public class R2StorageService implements IR2StorageService {
 
     @Value("${cloudflare.r2.public-domain}")
     private String publicDomain;
+
+    @Override
+    public String uploadBytesWithKey(byte[] bytes, String objectKey, String contentType) {
+        if (bytes == null || bytes.length == 0) {
+            throw new IllegalArgumentException("Dữ liệu byte không được để trống");
+        }
+
+        try {
+            PutObjectRequest request = PutObjectRequest.builder()
+                    .bucket(bucketName)
+                    .key(objectKey)
+                    .contentType(contentType != null ? contentType : "image/webp")
+                    .contentLength((long) bytes.length)
+                    .build();
+
+            s3Client.putObject(request, RequestBody.fromBytes(bytes));
+            log.info("Upload byte[] lên R2 thành công với key: {}", objectKey);
+
+            return getPublicUrl(objectKey);
+        } catch (S3Exception e) {
+            log.error("Lỗi S3/R2 khi upload key {}: {}", objectKey, e.awsErrorDetails().errorMessage());
+            throw new RuntimeException("Lỗi upload lên Cloudflare R2", e);
+        }
+    }
 
     @Override
     public String uploadCoverImage(MultipartFile file, Long comicId) {
@@ -53,47 +78,10 @@ public class R2StorageService implements IR2StorageService {
         }
     }
 
-
-//    @Override
-//    public String uploadFile(MultipartFile file, String folderPath) {
-//        if (file == null || file.isEmpty()) {
-//            throw new IllegalArgumentException("File upload không được để trống");
-//        }
-//
-//        String originalFilename = file.getOriginalFilename();
-//        String extension = "";
-//        if (originalFilename != null && originalFilename.contains(".")) {
-//            extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-//        }
-//
-//        String sanitizedFolder = sanitizeFolder(folderPath);
-//        String objectKey = sanitizedFolder + UUID.randomUUID() + extension;
-//
-//        try {
-//            PutObjectRequest request = PutObjectRequest.builder()
-//                    .bucket(bucketName)
-//                    .key(objectKey)
-//                    .contentType(file.getContentType())
-//                    .contentLength(file.getSize())
-//                    .build();
-//
-//            s3Client.putObject(request, RequestBody.fromInputStream(file.getInputStream(), file.getSize()));
-//            log.info("Upload file lên R2 thành công: {}", objectKey);
-//
-//            return getPublicUrl(objectKey);
-//        } catch (IOException e) {
-//            log.error("Lỗi đọc dữ liệu từ file upload: {}", e.getMessage());
-//            throw new RuntimeException("Lỗi hệ thống khi đọc file upload", e);
-//        } catch (S3Exception e) {
-//            log.error("Lỗi S3/R2 khi upload file: {}", e.awsErrorDetails().errorMessage());
-//            throw new RuntimeException("Lỗi upload lên Cloudflare R2", e);
-//        }
-//    }
-//
     @Override
-    public String uploadBytesWithKey(byte[] bytes, String objectKey, String contentType) {
-        if (bytes == null || bytes.length == 0) {
-            throw new IllegalArgumentException("Dữ liệu byte không được để trống");
+    public String uploadFileWithKey(File file, String objectKey, String contentType) {
+        if (file == null || !file.exists()) {
+            throw new IllegalArgumentException("File upload không tồn tại");
         }
 
         try {
@@ -101,26 +89,19 @@ public class R2StorageService implements IR2StorageService {
                     .bucket(bucketName)
                     .key(objectKey)
                     .contentType(contentType != null ? contentType : "image/webp")
-                    .contentLength((long) bytes.length)
+                    .contentLength(file.length())
                     .build();
 
-            s3Client.putObject(request, RequestBody.fromBytes(bytes));
-            log.info("Upload byte[] lên R2 thành công với key: {}", objectKey);
+            // Stream trực tiếp từ file trên ổ cứng lên R2, không load vào RAM
+            s3Client.putObject(request, RequestBody.fromFile(file));
+            log.info("Upload File lên R2 thành công với key: {}", objectKey);
 
             return getPublicUrl(objectKey);
         } catch (S3Exception e) {
-            log.error("Lỗi S3/R2 khi upload key {}: {}", objectKey, e.awsErrorDetails().errorMessage());
-            throw new RuntimeException("Lỗi upload lên Cloudflare R2", e);
+            log.error("Lỗi S3/R2 khi upload file key {}: {}", objectKey, e.awsErrorDetails().errorMessage());
+            throw new RuntimeException("Lỗi upload file lên Cloudflare R2", e);
         }
     }
-//
-//    @Override
-//    public String uploadBytes(byte[] bytes, String fileName, String contentType, String folderPath) {
-//        String sanitizedFolder = sanitizeFolder(folderPath);
-//        String objectKey = sanitizedFolder + UUID.randomUUID() + "_" + fileName;
-//        return uploadBytesWithKey(bytes, objectKey, contentType);
-//    }
-//
 //    @Override
 //    public void deleteFile(String fileKeyOrUrl) {
 //        if (fileKeyOrUrl == null || fileKeyOrUrl.isBlank()) {
@@ -141,37 +122,46 @@ public class R2StorageService implements IR2StorageService {
 //            throw new RuntimeException("Lỗi xóa file trên Cloudflare R2", e);
 //        }
 //    }
-//
+
 //    @Override
-//    public void deleteFiles(List<String> fileKeysOrUrls) {
-//        if (fileKeysOrUrls == null || fileKeysOrUrls.isEmpty()) {
+//    public void deleteFolderByPrefix(String folderPrefix) {
+//        if (folderPrefix == null || folderPrefix.isBlank()) {
 //            return;
 //        }
 //
-//        List<ObjectIdentifier> keysToDelete = fileKeysOrUrls.stream()
-//                .filter(url -> url != null && !url.isBlank())
-//                .map(this::extractKey)
-//                .map(key -> ObjectIdentifier.builder().key(key).build())
-//                .toList();
-//
-//        if (keysToDelete.isEmpty()) {
-//            return;
+//        String prefix = folderPrefix.startsWith("/") ? folderPrefix.substring(1) : folderPrefix;
+//        if (!prefix.endsWith("/")) {
+//            prefix += "/";
 //        }
 //
 //        try {
-//            DeleteObjectsRequest request = DeleteObjectsRequest.builder()
+//            ListObjectsV2Request listRequest = ListObjectsV2Request.builder()
+//                    .bucket(bucketName)
+//                    .prefix(prefix)
+//                    .build();
+//
+//            ListObjectsV2Response listResponse = s3Client.listObjectsV2(listRequest);
+//            List<ObjectIdentifier> keysToDelete = listResponse.contents().stream()
+//                    .map(s3Object -> ObjectIdentifier.builder().key(s3Object.key()).build())
+//                    .toList();
+//
+//            if (keysToDelete.isEmpty()) {
+//                return;
+//            }
+//
+//            DeleteObjectsRequest deleteRequest = DeleteObjectsRequest.builder()
 //                    .bucket(bucketName)
 //                    .delete(Delete.builder().objects(keysToDelete).build())
 //                    .build();
 //
-//            s3Client.deleteObjects(request);
-//            log.info("Xóa thành công {} files trên R2", keysToDelete.size());
+//            s3Client.deleteObjects(deleteRequest);
+//            log.info("Đã dọn dẹp {} file trong prefix '{}' trên R2", keysToDelete.size(), prefix);
 //        } catch (S3Exception e) {
-//            log.error("Lỗi S3/R2 khi xóa nhiều files: {}", e.awsErrorDetails().errorMessage());
-//            throw new RuntimeException("Lỗi xóa files trên Cloudflare R2", e);
+//            log.error("Lỗi S3/R2 khi xóa folder prefix {}: {}", prefix, e.awsErrorDetails().errorMessage());
+//            throw new RuntimeException("Lỗi dọn dẹp folder trên Cloudflare R2", e);
 //        }
 //    }
-//
+
     private String getPublicUrl(String objectKey) {
         String cleanDomain = publicDomain.endsWith("/")
                 ? publicDomain.substring(0, publicDomain.length() - 1)
@@ -182,26 +172,4 @@ public class R2StorageService implements IR2StorageService {
 
         return cleanDomain + "/" + cleanKey;
     }
-//
-//    private String extractKey(String fileKeyOrUrl) {
-//        String cleanDomain = publicDomain.endsWith("/")
-//                ? publicDomain
-//                : publicDomain + "/";
-//
-//        if (fileKeyOrUrl.contains(cleanDomain)) {
-//            return fileKeyOrUrl.replace(cleanDomain, "");
-//        }
-//        if (fileKeyOrUrl.startsWith("/")) {
-//            return fileKeyOrUrl.substring(1);
-//        }
-//        return fileKeyOrUrl;
-//    }
-//
-//    private String sanitizeFolder(String folderPath) {
-//        if (folderPath == null || folderPath.isBlank()) {
-//            return "";
-//        }
-//        String cleanFolder = folderPath.startsWith("/") ? folderPath.substring(1) : folderPath;
-//        return cleanFolder.endsWith("/") ? cleanFolder : cleanFolder + "/";
-//    }
 }

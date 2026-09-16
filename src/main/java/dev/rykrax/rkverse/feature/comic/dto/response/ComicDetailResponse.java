@@ -4,6 +4,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record ComicDetailResponse(
-
+        Long id,
+        String title,
+        String slug,
+        String description,
+        String author,
+        String artist,
+        String coverPath,
+        String bannerPath,
+        String status
 ) {
 }
