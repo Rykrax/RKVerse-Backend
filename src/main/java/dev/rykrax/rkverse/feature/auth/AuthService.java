@@ -71,7 +71,6 @@ public class AuthService implements IAuthService {
 
     @Override
     public RegisterResponse register(RegisterRequest request) {
-        System.out.println(request);
         if (userRepository.existsByUsername(request.username())) {
             throw new AppException(ErrorCode.USER_ALREADY_EXISTS);
         }
