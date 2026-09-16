@@ -2,25 +2,8 @@ spring:
   application:
     name: RKVerse
 
-  datasource:
-    url: jdbc:mysql://${DB_HOST}:${DB_PORT}/${DB_DATABASE}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC&createDatabaseIfNotExist=true
-    username: root
-    password: ${DB_ROOT_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: validate
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true
-
-  flyway:
-    enabled: true
-    baseline-on-migrate: true
-    baseline-version: 0
-    locations: classpath:db/migration
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
   main:
     allow-circular-references: true
@@ -35,14 +18,14 @@ spring:
   servlet:
     multipart:
       enabled: true
-      max-file-size: 20MB          # dung lượng tối đa cho 1 file lẻ
-      max-request-size: 300MB      # tổng dung lượng tối đa cho cả request
+      max-file-size: 20MB
+      max-request-size: 300MB
       file-size-threshold: 2MB
 
 server:
   tomcat:
-    max-swallow-size: -1           # không giới hạn swallow size
-    max-http-form-post-size: 300MB # giới hạn kích thước form POST
+    max-swallow-size: -1
+    max-http-form-post-size: 300MB
     max-part-count: 300
 
 jwt:
@@ -50,16 +33,10 @@ jwt:
   expiration: ${ACCESS_TOKEN_EXP}
   refresh-token: ${REFRESH_TOKEN_EXP}
 
-logging:
-  level:
-    org.springframework.security: DEBUG
-    org.springframework.security.web.access: TRACE
-    org.hibernate.orm.jdbc.bind: trace
-
 cloudflare:
   r2:
-    endpoint: ${ENDPOINT_R2}
-    access-key: ${ACCESS_KEY}
-    secret-key: ${SECRET_KEY}
-    bucket-name: ${BUCKET_NAME}
-    public-domain: ${R2_CUSTOM_DOMAIN}
+    endpoint: ${ENDPOINT_R2:}
+    access-key: ${ACCESS_KEY:}
+    secret-key: ${SECRET_KEY:}
+    bucket-name: ${BUCKET_NAME:rkverse-dev}
+    public-domain: ${R2_CUSTOM_DOMAIN:}

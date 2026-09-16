@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -34,12 +35,14 @@ public class ComicController {
     }
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('comic.create')")
     public ApiResponse<ComicResponse> create(@Valid @ModelAttribute CreateComicRequest request) {
         ComicResponse response = comicService.createComic(request);
         return new ApiResponse<>(200, "Thêm truyện thành công", response);
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('comic.delete')")
     public ApiResponse<Void> delete(@PathVariable Long id) {
         comicService.delete(id);
         return new ApiResponse<>(200, "Xóa thành công", null);
