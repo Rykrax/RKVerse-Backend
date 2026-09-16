@@ -1,6 +1,7 @@
 package dev.rykrax.rkverse.feature.comic;
 
 import dev.rykrax.rkverse.common.PageResponse;
+import dev.rykrax.rkverse.enums.ComicUploadStatus;
 import dev.rykrax.rkverse.enums.ErrorCode;
 import dev.rykrax.rkverse.exception.AppException;
 import dev.rykrax.rkverse.feature.comic.dto.request.CreateComicRequest;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.io.IOException;
 import java.time.Instant;
@@ -44,6 +47,24 @@ public class ComicService implements IComicService {
     @Override
     @Transactional
     public ComicResponse createComic(CreateComicRequest request) {
+        // xử lý lỗi IO trước
+        byte[] fileBytes = null;
+        String contentType = "image/webp";
+        boolean hasCoverImage = request.coverImage() != null && !request.coverImage().isEmpty();
+
+        if (hasCoverImage) {
+            try {
+                fileBytes = request.coverImage().getBytes();
+                if (request.coverImage().getContentType() != null) {
+                    contentType = request.coverImage().getContentType();
+                }
+            } catch (IOException e) {
+                log.error("Lỗi đọc file upload", e);
+                throw new RuntimeException("Lỗi đọc file upload", e);
+            }
+        }
+
+        // lưu db
         Comic comic = comicMapper.toEntity(request);
         if (request.slug() == null || request.slug().isBlank()) {
             String slug = SlugUtils.toSlug(request.title());
@@ -52,21 +73,23 @@ public class ComicService implements IComicService {
             comic.setSlug(request.slug().trim());
         }
 
+        if (hasCoverImage) {
+            comic.setUploadStatus(ComicUploadStatus.PENDING);
+        }
         Comic savedComic = comicRepository.save(comic);
 
-        boolean hasCoverImage = request.coverImage() != null && !request.coverImage().isEmpty();
-
+        // xử lý async sau khi commit vào db thành công
         if (hasCoverImage) {
-            try {
-                byte[] fileBytes = request.coverImage().getBytes();
-                String contentType = request.coverImage().getContentType() != null
-                        ? request.coverImage().getContentType()
-                        : "image/webp";
-                comicAsyncService.uploadCoverAsync(savedComic.getId(), fileBytes, contentType);
-            } catch (IOException e) {
-                log.error("Không thể đọc file ảnh của Comic ID: {}", savedComic.getId(), e);
-                throw new RuntimeException("Lỗi đọc file upload", e);
-            }
+            Long comicId = savedComic.getId();
+            byte[] finalBytes = fileBytes;
+            String finalContentType = contentType;
+
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    comicAsyncService.uploadCoverAsync(comicId, finalBytes, finalContentType);
+                }
+            });
         }
 
         log.info("Đã tạo mới Comic thành công với ID: {}, slug: {}", comic.getId(), comic.getSlug());
