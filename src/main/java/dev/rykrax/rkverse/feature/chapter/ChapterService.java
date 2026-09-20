@@ -78,8 +78,8 @@ public class ChapterService implements IChapterService {
     public ChapterDetailResponse getChapterDetail(Long comicId, BigDecimal chapterNumber) {
         // tìm chapter theo comicId + chapterNumber với status PUBLISHED
         Chapter chapter = chapterRepository
-                .findByComicIdAndChapterNumberAndStatusAndDeletedAtIsNull(comicId, chapterNumber, ChapterStatus.PUBLISHED)
-                .orElseThrow(() -> new EntityNotFoundException("Chương không tồn tại hoặc chưa được xuất bản"));
+                .findActivityChapter(comicId, chapterNumber, ChapterStatus.PUBLISHED)
+                .orElseThrow(() -> new EntityNotFoundException("Chương không tồn tại hoặc đã bị xóa"));
 
         // chuẩn hóa domain
         String cleanDomain = publicDomain.endsWith("/")

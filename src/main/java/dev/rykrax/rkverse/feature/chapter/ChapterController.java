@@ -22,7 +22,7 @@ public class ChapterController {
     @GetMapping("/comics/{comicId}/chapters")
     public ApiResponse<PageResponse<ChapterResponse>> getChapterByComic(
             @PathVariable Long comicId,
-            @PageableDefault(page = 0, size = 10, sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+            @PageableDefault(page = 0, size = 10, sort = "chapterNumber", direction = Sort.Direction.DESC) Pageable pageable) {
         PageResponse<ChapterResponse> response = chapterService.getChapters(comicId, pageable);
         return new ApiResponse<>(200, "Danh sách chapter", response);
     }
