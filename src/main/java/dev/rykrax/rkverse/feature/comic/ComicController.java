@@ -41,6 +41,12 @@ public class ComicController {
         return new ApiResponse<>(200, "Thêm truyện thành công", response);
     }
 
+    @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('comic.update')")
+    public ApiResponse<Void> update() {
+        return new ApiResponse<>(200, "Cập nhật thành công", null);
+    }
+
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('comic.delete')")
     public ApiResponse<Void> delete(@PathVariable Long id) {

@@ -4,6 +4,7 @@ import dev.rykrax.rkverse.enums.UserStatus;
 import dev.rykrax.rkverse.feature.user.User;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -26,6 +27,7 @@ public class CustomUserDetail implements UserDetails {
 //    }
 
     @Override
+    @NonNull
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (user.getRoles() == null || user.getRoles().isEmpty()) {
             return Collections.emptyList();
@@ -38,14 +40,14 @@ public class CustomUserDetail implements UserDetails {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
             }
 
-            // thêm permissions thuộc Role
-//            if (role.getPermissions() != null) {
-//                role.getPermissions().forEach(permission -> {
-//                    if (permission.getCode() != null && !permission.getCode().isBlank()) {
-//                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
-//                    }
-//                });
-//            }
+            //thêm permissions thuộc Role
+            if (role.getPermissions() != null) {
+                role.getPermissions().forEach(permission -> {
+                    if (permission.getCode() != null && !permission.getCode().isBlank()) {
+                        authorities.add(new SimpleGrantedAuthority(permission.getCode()));
+                    }
+                });
+            }
         });
 
         return authorities;
