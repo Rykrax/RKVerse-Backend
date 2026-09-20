@@ -3,11 +3,10 @@ FROM maven:3.9.9-eclipse-temurin-21 AS build
 
 WORKDIR /workspace
 
-# Tận dụng Docker cache cho dependencies
 COPY pom.xml .
 RUN mvn -B dependency:go-offline
 
-# Copy source code và đóng gói (bỏ qua tests)
+# Copy source code và đóng gói
 COPY src ./src
 RUN mvn -B clean package -DskipTests
 
