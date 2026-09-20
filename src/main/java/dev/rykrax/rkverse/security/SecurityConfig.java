@@ -64,7 +64,12 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // 1. Chỉ định chính xác domain của Vite (Không dùng "*" khi allowCredentials = true)
-        configuration.setAllowedOrigins(List.of("http://localhost:5173", "http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173",
+                "http://localhost:3000",
+                "https://rkverse.online",
+                "https://www.rkverse.online"
+        ));
 
         // 2. Các HTTP Methods cho phép
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
