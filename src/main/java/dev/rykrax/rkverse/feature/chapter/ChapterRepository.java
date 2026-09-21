@@ -18,8 +18,8 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     );
     Page<Chapter> findByComicId(Long comicId, Pageable pageable);
     Optional<Chapter> findByIdAndStatusAndDeletedAtIsNull(Long id, ChapterStatus status);
+    boolean existsByComicIdAndChapterNumber(Long comicId, BigDecimal chapterNumber);
 
-    // tìm ID chapter trước đó (số chương nhỏ hơn gần nhất)
     @Query("""
         SELECT c.id FROM Chapter c 
         WHERE c.comic.id = :comicId 
@@ -31,7 +31,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
     """)
     Optional<Long> findPrevChapterId(@Param("comicId") Long comicId, @Param("currentNumber") BigDecimal currentNumber);
 
-    // tìm ID chapter kế tiếp (số chương lớn hơn gần nhất)
     @Query("""
         SELECT c.id FROM Chapter c 
         WHERE c.comic.id = :comicId 
@@ -48,7 +47,6 @@ public interface ChapterRepository extends JpaRepository<Chapter, Long> {
         WHERE c.comic.id = :comicId
         AND c.chapterNumber = :chapterNumber
         AND c.status = :status
-        AND c.comic.deletedAt IS NULL
     """)
     Optional<Chapter> findActivityChapter(
             @Param("comicId") Long comicId,
