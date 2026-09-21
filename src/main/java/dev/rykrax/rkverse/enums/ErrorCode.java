@@ -19,7 +19,10 @@ public enum ErrorCode {
     NEW_PASSWORD_MUST_BE_DIFFERENT(HttpStatus.CONFLICT, "Mật khẩu mới không được trùng với mật khẩu hiện tại"),
 
     // Comic
-    COMIC_NOT_FOUND(HttpStatus.NOT_FOUND, "Truyện không tồn tại");
+    COMIC_NOT_FOUND(HttpStatus.NOT_FOUND, "Truyện không tồn tại"),
+
+    // Chapter
+    CHAPTER_ALREADY_EXISTS(HttpStatus.CONFLICT, "Chương đã tồn tại");
 
     private final HttpStatus httpStatus;
     private final String message;

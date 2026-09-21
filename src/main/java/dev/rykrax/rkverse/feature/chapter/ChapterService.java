@@ -54,29 +54,7 @@ public class ChapterService implements IChapterService {
     }
 
     @Override
-    public ChapterDetailResponse getDetailChapter(Long comicId, Long chapterId) {
-        Chapter chapter = chapterRepository.findByIdAndStatusAndDeletedAtIsNull(chapterId, ChapterStatus.PUBLISHED)
-                .filter(c -> c.getComic().getId().equals(comicId))
-                .orElseThrow(() -> new EntityNotFoundException("Chương không tồn tại hoặc chưa được xuất bản"));
-        String cleanDomain = publicDomain.endsWith("/")
-                ? publicDomain.substring(0, publicDomain.length() - 1)
-                : publicDomain;
-        String basePath = chapter.getStoragePath() != null
-                ? chapter.getStoragePath()
-                : String.format("comics/%d/chapters/%d", comicId, chapter.getId());
-
-        List<String> pages = IntStream.rangeClosed(1, chapter.getTotalPages())
-                .mapToObj(i -> String.format("%s/%s/%03d.webp", cleanDomain, basePath, i))
-                .toList();
-        Long prevChapterId = chapterRepository.findPrevChapterId(comicId, chapter.getChapterNumber()).orElse(null);
-        Long nextChapterId = chapterRepository.findNextChapterId(comicId, chapter.getChapterNumber()).orElse(null);
-        chapterRepository.save(chapter);
-        return chapterMapper.toDetailResponse(chapter, pages, prevChapterId, nextChapterId);
-    }
-
-    @Override
     public ChapterDetailResponse getChapterDetail(Long comicId, BigDecimal chapterNumber) {
-        // tìm chapter theo comicId + chapterNumber với status PUBLISHED
         Chapter chapter = chapterRepository
                 .findActivityChapter(comicId, chapterNumber, ChapterStatus.PUBLISHED)
                 .orElseThrow(() -> new EntityNotFoundException("Chương không tồn tại hoặc đã bị xóa"));
@@ -97,7 +75,6 @@ public class ChapterService implements IChapterService {
                 .mapToObj(i -> String.format("%s/%s/%03d.webp", cleanDomain, basePath, i))
                 .toList();
 
-        // điều hướng chương trước / sau
         Long prevChapterId = chapterRepository.findPrevChapterId(comicId, chapter.getChapterNumber()).orElse(null);
         Long nextChapterId = chapterRepository.findNextChapterId(comicId, chapter.getChapterNumber()).orElse(null);
 
@@ -113,6 +90,10 @@ public class ChapterService implements IChapterService {
 
         Comic comic = comicRepository.findById(comicId).orElseThrow(() ->
                 new AppException(ErrorCode.COMIC_NOT_FOUND));
+
+        if (chapterRepository.existsByComicIdAndChapterNumber(comicId, request.chapterNumber())) {
+            throw new AppException(ErrorCode.CHAPTER_ALREADY_EXISTS);
+        }
 
         List<MultipartFile> sortedMultipartFiles = request.files().stream()
                 .sorted(Comparator.comparing(f -> f.getOriginalFilename() != null ? f.getOriginalFilename() : ""))
