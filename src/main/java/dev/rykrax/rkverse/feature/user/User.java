@@ -31,6 +31,9 @@ public class User {
     @Column(name = "email", unique = true, length = 100)
     private String email;
 
+    @Column(name = "display_name", length = 100)
+    private String displayName;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;

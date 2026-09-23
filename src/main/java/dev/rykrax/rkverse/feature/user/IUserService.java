@@ -1,6 +1,7 @@
 package dev.rykrax.rkverse.feature.user;
 
 import dev.rykrax.rkverse.common.PageResponse;
+import dev.rykrax.rkverse.feature.user.dto.request.ChangeDisplayNameRequest;
 import dev.rykrax.rkverse.feature.user.dto.request.ChangePasswordRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import dev.rykrax.rkverse.security.CustomUserDetail;
@@ -15,4 +16,5 @@ public interface IUserService {
     UserResponse update(Long id);
     void delete(Long id);
     void changePassword(Long userId, ChangePasswordRequest request);
+    void changeDisplayName(Long userId, ChangeDisplayNameRequest request);
 }
