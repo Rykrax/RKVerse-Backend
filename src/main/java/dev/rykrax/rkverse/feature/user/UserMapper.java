@@ -1,5 +1,6 @@
 package dev.rykrax.rkverse.feature.user;
 
+import dev.rykrax.rkverse.feature.role.Role;
 import dev.rykrax.rkverse.feature.user.dto.request.UserRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import org.mapstruct.Mapper;
@@ -12,4 +13,8 @@ public interface UserMapper {
     User toEntity(UserRequest userRequest);
 
     UserResponse toResponse(User user);
+
+    default String map(Role role) {
+        return role != null ? role.getName() : null;
+    }
 }
