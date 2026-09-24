@@ -2,6 +2,7 @@ package dev.rykrax.rkverse.feature.user;
 
 import dev.rykrax.rkverse.common.ApiResponse;
 import dev.rykrax.rkverse.common.PageResponse;
+import dev.rykrax.rkverse.feature.user.dto.request.ChangeDisplayNameRequest;
 import dev.rykrax.rkverse.feature.user.dto.request.ChangePasswordRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import dev.rykrax.rkverse.security.CustomUserDetail;
@@ -55,11 +56,18 @@ public class UserController {
         return new ApiResponse<>(201, "Xóa thành công", null);
     }
 
-    @PutMapping("/change-password")
+    @PutMapping("/password")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                             @AuthenticationPrincipal CustomUserDetail userDetails) {
         userService.changePassword(userDetails.getId(), request);
         return new ApiResponse<>(200, "Đổi mật khẩu thành công", null);
+    }
+
+    @PatchMapping("/me")
+    public ApiResponse<Void> changeDisplayName(@AuthenticationPrincipal CustomUserDetail userDetails,
+                                               @Valid @RequestBody ChangeDisplayNameRequest request) {
+        userService.changeDisplayName(userDetails.getId(), request);
+        return new ApiResponse<>(201, "Cập nhật thành công", null);
     }
 }

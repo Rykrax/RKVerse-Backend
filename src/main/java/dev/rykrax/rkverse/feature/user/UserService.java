@@ -5,17 +5,20 @@ import dev.rykrax.rkverse.enums.ErrorCode;
 import dev.rykrax.rkverse.enums.UserStatus;
 import dev.rykrax.rkverse.exception.AppException;
 import dev.rykrax.rkverse.feature.auth.RefreshTokenService;
+import dev.rykrax.rkverse.feature.user.dto.request.ChangeDisplayNameRequest;
 import dev.rykrax.rkverse.feature.user.dto.request.ChangePasswordRequest;
 import dev.rykrax.rkverse.feature.user.dto.response.UserResponse;
 import dev.rykrax.rkverse.security.CustomUserDetail;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -87,5 +90,14 @@ public class UserService implements IUserService {
         userRepository.save(user);
 
         refreshTokenService.revokeAllUserTokens(userId);
+    }
+
+    @Override
+    public void changeDisplayName(Long userId, ChangeDisplayNameRequest request) {
+        User user = userRepository.findById(userId).orElseThrow(() ->
+                new AppException(ErrorCode.USER_NOT_FOUND));
+
+        user.setDisplayName(request.displayName());
+        userRepository.save(user);
     }
 }
