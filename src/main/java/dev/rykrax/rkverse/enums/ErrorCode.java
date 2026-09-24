@@ -22,7 +22,11 @@ public enum ErrorCode {
     COMIC_NOT_FOUND(HttpStatus.NOT_FOUND, "Truyện không tồn tại"),
 
     // Chapter
-    CHAPTER_ALREADY_EXISTS(HttpStatus.CONFLICT, "Chương đã tồn tại");
+    CHAPTER_ALREADY_EXISTS(HttpStatus.CONFLICT, "Chương đã tồn tại"),
+
+    //
+    SOMETHING_WRONG(HttpStatus.BAD_REQUEST, "Something wrong"),
+    WRONG_TOKEN(HttpStatus.BAD_REQUEST, "Thời gian không phù hợp hoặc token không hợp lệ");
 
     private final HttpStatus httpStatus;
     private final String message;
