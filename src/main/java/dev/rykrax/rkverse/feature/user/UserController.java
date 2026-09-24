@@ -56,7 +56,7 @@ public class UserController {
         return new ApiResponse<>(201, "Xóa thành công", null);
     }
 
-    @PutMapping("/password")
+    @PatchMapping("/password")
     @PreAuthorize("isAuthenticated()")
     public ApiResponse<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                             @AuthenticationPrincipal CustomUserDetail userDetails) {
