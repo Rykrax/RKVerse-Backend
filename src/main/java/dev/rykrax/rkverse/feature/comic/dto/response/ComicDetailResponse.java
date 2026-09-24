@@ -12,6 +12,7 @@ public record ComicDetailResponse(
         String artist,
         String coverPath,
         String bannerPath,
-        String status
+        String status,
+        Long views
 ) {
 }

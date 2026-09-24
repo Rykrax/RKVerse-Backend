@@ -35,8 +35,8 @@ jwt:
 
 cloudflare:
   r2:
-    endpoint: ${ENDPOINT_R2:}
-    access-key: ${ACCESS_KEY:}
-    secret-key: ${SECRET_KEY:}
-    bucket-name: ${BUCKET_NAME:rkverse-dev}
-    public-domain: ${R2_CUSTOM_DOMAIN:}
+    endpoint: ${ENDPOINT_R2}
+    access-key: ${ACCESS_KEY}
+    secret-key: ${SECRET_KEY}
+    bucket-name: ${BUCKET_NAME}
+    public-domain: ${R2_CUSTOM_DOMAIN}
