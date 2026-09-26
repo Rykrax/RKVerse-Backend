@@ -1,5 +1,6 @@
 package dev.rykrax.rkverse.feature.chapter;
 
+import dev.rykrax.rkverse.common.RedisService;
 import dev.rykrax.rkverse.common.storage.IR2StorageService;
 import dev.rykrax.rkverse.enums.ChapterStatus;
 import dev.rykrax.rkverse.enums.ChapterUploadStatus;
@@ -13,6 +14,7 @@ import org.springframework.util.FileSystemUtils;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,8 @@ public class ChapterAsyncService {
 
     private final ChapterRepository chapterRepository;
     private final IR2StorageService r2StorageService;
+    private final RedisService redisService;
+    private static final String CHAPTER_CACHE_PREFIX = "chapter:detail:";
 
     @Async("chapterUploadExecutor")
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -53,6 +57,9 @@ public class ChapterAsyncService {
                 chapter.setErrorMessage(null);
                 chapterRepository.save(chapter);
                 log.info("Upload hoàn tất thành công cho Chapter ID: {}", chapterId);
+
+                String cacheKey = CHAPTER_CACHE_PREFIX + comicId + ":" + chapter.getChapterNumber();
+                redisService.delete(cacheKey);
             }, () -> log.error("Không tìm thấy Chapter ID: {} để cập nhật SUCCESS", chapterId));
 
         } catch (Exception e) {

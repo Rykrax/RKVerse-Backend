@@ -1,6 +1,7 @@
 package dev.rykrax.rkverse.feature.chapter;
 
 import dev.rykrax.rkverse.common.PageResponse;
+import dev.rykrax.rkverse.common.RedisService;
 import dev.rykrax.rkverse.enums.ChapterStatus;
 import dev.rykrax.rkverse.enums.ChapterUploadStatus;
 import dev.rykrax.rkverse.enums.ErrorCode;
@@ -11,7 +12,6 @@ import dev.rykrax.rkverse.feature.chapter.dto.response.ChapterResponse;
 import dev.rykrax.rkverse.feature.comic.Comic;
 import dev.rykrax.rkverse.feature.comic.ComicRepository;
 import dev.rykrax.rkverse.utils.ImageValidator;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,12 +20,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -39,8 +41,13 @@ public class ChapterService implements IChapterService {
     private final ComicRepository comicRepository;
     private final ChapterMapper chapterMapper;
     private final ChapterAsyncService chapterAsyncService;
+    private final RedisService redisService;
     @Value("${cloudflare.r2.public-domain}")
     private String publicDomain;
+    private final ObjectMapper objectMapper;
+
+    private static final String CHAPTER_CACHE_PREFIX = "chapter:detail:";
+    private static final Duration CHAPTER_CACHE_TTL = Duration.ofDays(3);
 
     @Override
     public PageResponse<ChapterResponse> getChapters(Long comicId, Pageable pageable) {
@@ -55,21 +62,31 @@ public class ChapterService implements IChapterService {
 
     @Override
     public ChapterDetailResponse getChapterDetail(Long comicId, BigDecimal chapterNumber) {
+        String cacheKey = CHAPTER_CACHE_PREFIX + comicId + ":" + chapterNumber;
+        try {
+            String cachedJson = redisService.get(cacheKey);
+            if (cachedJson != null && !cachedJson.isBlank()) {
+                log.info("==> [Cache HIT] Lấy dữ liệu Chapter từ Redis: {}", cacheKey);
+                return objectMapper.readValue(cachedJson, ChapterDetailResponse.class);
+            }
+        } catch (Exception e) {
+            log.warn("==> [Cache ERROR] Lỗi đọc Redis Cache cho key {}, fallback query Database: {}", cacheKey, e.getMessage());
+        }
+
+        log.info("==> [Cache MISS] Truy vấn MySQL cho Comic ID: {}, Chapter: {}", comicId, chapterNumber);
+
         Chapter chapter = chapterRepository
                 .findActivityChapter(comicId, chapterNumber, ChapterStatus.PUBLISHED)
-                .orElseThrow(() -> new EntityNotFoundException("Chương không tồn tại hoặc đã bị xóa"));
+                .orElseThrow(() -> new AppException(ErrorCode.COMIC_NOT_FOUND));
 
-        // chuẩn hóa domain
         String cleanDomain = publicDomain.endsWith("/")
-                ? publicDomain.substring(0, publicDomain.length() - 1)
+                ? publicDomain.substring(0, publicDomain.length()-1)
                 : publicDomain;
 
-        // đường dẫn storage
         String basePath = (chapter.getStoragePath() != null && !chapter.getStoragePath().isBlank())
                 ? chapter.getStoragePath()
                 : String.format("comics/%d/chapters/%d", comicId, chapter.getId());
 
-        // sinh danh sách link ảnh
         int totalPages = chapter.getTotalPages() != null ? chapter.getTotalPages() : 0;
         List<String> pages = IntStream.rangeClosed(1, totalPages)
                 .mapToObj(i -> String.format("%s/%s/%03d.webp", cleanDomain, basePath, i))
@@ -78,7 +95,14 @@ public class ChapterService implements IChapterService {
         Long prevChapterId = chapterRepository.findPrevChapterId(comicId, chapter.getChapterNumber()).orElse(null);
         Long nextChapterId = chapterRepository.findNextChapterId(comicId, chapter.getChapterNumber()).orElse(null);
 
-        return chapterMapper.toDetailResponse(chapter, pages, prevChapterId, nextChapterId);
+        ChapterDetailResponse response = chapterMapper.toDetailResponse(chapter, pages, prevChapterId, nextChapterId);
+        try {
+            String jsonPayload = objectMapper.writeValueAsString(response);
+            redisService.set(cacheKey, jsonPayload, CHAPTER_CACHE_TTL);
+        } catch (Exception e) {
+            log.warn("==> Không thể ghi cache vào Redis cho key {}: {}", cacheKey, e.getMessage());
+        }
+        return response;
     }
 
     @Override
